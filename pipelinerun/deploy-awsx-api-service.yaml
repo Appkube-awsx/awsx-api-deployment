@@ -101,7 +101,7 @@ spec:
     params:
     - name: workingDir
       value: $(workspaces.source.path)
-  - name: build-awsx-api-service
+  - name: build-awsx-api-container
     runAfter: ["build-awsx-api"]
     taskRef:
       name: build-kaniko
@@ -207,4 +207,4 @@ spec:
   - name: helm-workingDir-param
     value: $(workspaces.source.path)/helm
   - name: build-awsx-api-base-container
-    value: "true"
+    value: "false"

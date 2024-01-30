@@ -13,7 +13,7 @@ spec:
       default: ""
   steps:
     - name: read-directory
-      image: ubuntu
+      image: synectiks/awsx-api-base:latest
       script: echo $(params.workingDir) && ls -al $(params.workingDir)
     - name: awsx-api-build
       image: synectiks/awsx-api-base:latest
