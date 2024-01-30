@@ -7,4 +7,3 @@ RUN apt update && apt upgrade -y \
  && tar -xvf go1.19.13.linux-amd64.tar.gz -C /usr/local
 
 ENV PATH "$PATH:/usr/local/go/bin"
-RUN go mod download
