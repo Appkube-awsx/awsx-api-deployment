@@ -19,6 +19,9 @@ spec:
   - name: deploy-repo-url
     type: string
     description: deployment repo for awsx-api service - https://github.com/Appkube-awsx/awsx-api-deployment.git
+  - name: build-awsx-api-base-container
+    type: string
+    description: build awsx-api base container
   - name: helm-workingDir-param
     type: string
     description: working directory for helm execution
@@ -57,8 +60,39 @@ spec:
       value: $(params.repo-url)
     - name: revision
       value: $(params.repo-revision)
+  - name: fetch-deploy-repo
+    taskRef:
+      name: git-clone
+    workspaces:
+    - name: output
+      workspace: shared-data1
+    params:
+    - name: url
+      value: $(params.deploy-repo-url)
+  - name: build-awsx-api-base-container
+    runAfter: ["fetch-deploy-repo"]
+    when:
+    - input: $(params.build-awsx-api-base-container)
+      operator: in
+      values: ["true"]
+    taskRef:
+      name: build-kaniko
+    workspaces:
+    - name: source
+      workspace: shared-data1
+    - name: dockerconfig
+      workspace: dockerconfig-secret
+    params:
+    - name: IMAGE
+      value: synectiks/awsx-api-base:$(tasks.fetch-repo.results.commit)
+    - name: IMAGE2
+      value: synectiks/awsx-api-base:latest
+    - name: DOCKERFILE
+      value: $(workspaces.source.path)/Dockerfile
+    - name: CONTEXT
+      value: ./
   - name: build-awsx-api
-    runAfter: ["fetch-repo"]
+    runAfter: ["build-awsx-api-base-container"]
     taskRef:
       name: build-awsx-api-task
     workspaces:
@@ -67,7 +101,7 @@ spec:
     params:
     - name: workingDir
       value: $(workspaces.source.path)
-  - name: build-kaniko
+  - name: build-awsx-api-service
     runAfter: ["build-awsx-api"]
     taskRef:
       name: build-kaniko
@@ -172,3 +206,5 @@ spec:
     value: appkube-awsx-api-service
   - name: helm-workingDir-param
     value: $(workspaces.source.path)/helm
+  - name: build-awsx-api-base-container
+    value: "true"

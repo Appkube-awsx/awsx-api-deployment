@@ -4,6 +4,7 @@ SHELL ["/bin/bash", "-c"]
 RUN apt update && apt upgrade -y \
  && apt install sudo curl wget zip unzip -y \
  && wget https://go.dev/dl/go1.19.13.linux-amd64.tar.gz \
- && tar -xvf go1.19.13.linux-amd64.tar.gz -C /usr/local \
- && echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.bashrc
+ && tar -xvf go1.19.13.linux-amd64.tar.gz -C /usr/local
+
 ENV PATH "$PATH:/usr/local/go/bin"
+RUN go mod download
