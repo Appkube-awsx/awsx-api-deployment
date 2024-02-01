@@ -57,12 +57,12 @@ spec:
         export AWS_SHARED_CREDENTIALS_FILE=/tekton/home/.aws/credentials
         echo "Configure kubectl for eks cluster"
         aws eks update-kubeconfig --region us-east-1 --name myclustTT
-        echo "List repo, ls -al /workspace/source"
-        ls -al /workspace/source
+        echo workingDir
+        ls -al "$(params.workingDir)"
         echo "Check kubectl presence"
         kubectl version
         echo apply 1_namespace.yaml
-        kubectl apply -f 1_namespace.yaml
+        kubectl apply -f "$(params.workingDir)"/../../1_namespace.yaml
     - name: deploy-awsx-api-service
       image: $(params.helm_image)
       script: |

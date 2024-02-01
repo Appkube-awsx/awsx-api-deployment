@@ -168,7 +168,7 @@ spec:
     - input: $(params.uninstall-awsx-api-service)
       operator: in
       values: ["false"]
-    runAfter: ["build-awsx-api"]
+    runAfter: ["build-awsx-api-container"]
     taskRef:
       name: helm-awsx-api-install
     params:
