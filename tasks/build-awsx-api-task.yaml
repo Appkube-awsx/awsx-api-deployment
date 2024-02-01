@@ -20,5 +20,5 @@ spec:
       workingDir: $(params.workingDir)
       script: |
         /bin/bash
-        # source ~/.bashrc
+        go version
         go build

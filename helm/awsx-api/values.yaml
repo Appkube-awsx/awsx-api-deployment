@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  pullPolicy: IfNotPresent
+  repository: synectiks/awsx-api
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
@@ -41,7 +41,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 7000
 
 ingress:
   enabled: false
@@ -96,3 +96,21 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+virtualservice:
+  enabled: true
+  name: "appkube-awsx-api-vs"
+  namespace: "istio-system"
+  hosts: "api.synectiks.net"
+  gateway: "appkube-api-gateway"
+  http:
+  - match:
+    - uri:
+      prefix: "/awsx-api"
+    rewrite:
+      uri: /
+    route:
+    - destination:
+        host: awsx-api.appkube-awsx-api-service.svc.cluster.local
+        port:
+          number: 7000

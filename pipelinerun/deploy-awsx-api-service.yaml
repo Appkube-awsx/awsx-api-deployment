@@ -1,4 +1,3 @@
-
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
@@ -19,6 +18,9 @@ spec:
   - name: deploy-repo-url
     type: string
     description: deployment repo for awsx-api service - https://github.com/Appkube-awsx/awsx-api-deployment.git
+  - name: uninstall-awsx-api-service
+    type: string
+    description: uninstall awsx-api service and post install cleanup
   - name: build-awsx-api-base-container
     type: string
     description: build awsx-api base container
@@ -49,7 +51,34 @@ spec:
     description: |
       This workspace will hold aws credentials
   tasks:
+  - name: uninstall-awsx-api-service
+    when:
+    - input: $(params.uninstall-awsx-api-service)
+      operator: in
+      values: ["true"]
+    taskRef:
+      name: helm-awsx-api-uninstall
+    params:
+    - name: workingDir
+      value: $(params.helm-workingDir-param)
+    - name: release_version
+      value: $(params.helm-release-version-param)
+    - name: release_name
+      value: $(params.helm-release-name-param)
+    - name: release_namespace
+      value: $(params.helm-release-namespace-param)
+    - name: overwrite_values
+      value: image.tag=$(tasks.fetch-repo.results.commit)
+    workspaces:
+    - name: source
+      workspace: shared-data1
+    - name: secrets
+      workspace: aws-secrets
   - name: fetch-repo
+    when:
+    - input: $(params.uninstall-awsx-api-service)
+      operator: in
+      values: ["false"]
     taskRef:
       name: git-clone
     workspaces:
@@ -61,6 +90,10 @@ spec:
     - name: revision
       value: $(params.repo-revision)
   - name: fetch-deploy-repo
+    when:
+    - input: $(params.uninstall-awsx-api-service)
+      operator: in
+      values: ["false"]
     taskRef:
       name: git-clone
     workspaces:
@@ -70,11 +103,14 @@ spec:
     - name: url
       value: $(params.deploy-repo-url)
   - name: build-awsx-api-base-container
-    runAfter: ["fetch-deploy-repo"]
     when:
+    - input: $(params.uninstall-awsx-api-service)
+      operator: in
+      values: ["false"]
     - input: $(params.build-awsx-api-base-container)
       operator: in
       values: ["true"]
+    runAfter: ["fetch-deploy-repo"]
     taskRef:
       name: build-kaniko
     workspaces:
@@ -92,6 +128,10 @@ spec:
     - name: CONTEXT
       value: ./
   - name: build-awsx-api
+    when:
+    - input: $(params.uninstall-awsx-api-service)
+      operator: in
+      values: ["false"]
     runAfter: ["build-awsx-api-base-container"]
     taskRef:
       name: build-awsx-api-task
@@ -102,6 +142,10 @@ spec:
     - name: workingDir
       value: $(workspaces.source.path)
   - name: build-awsx-api-container
+    when:
+    - input: $(params.uninstall-awsx-api-service)
+      operator: in
+      values: ["false"]
     runAfter: ["build-awsx-api"]
     taskRef:
       name: build-kaniko
@@ -119,38 +163,30 @@ spec:
       value: $(workspaces.source.path)/Dockerfile
     - name: CONTEXT
       value: ./
-  # - name: fetch-deployment-repo
-  #   runAfter: ["fetch-repo"]
-  #   taskRef:
-  #     name: git-clone
-  #   workspaces:
-  #   - name: output
-  #     workspace: shared-data1
-  #   params:
-  #   - name: url
-  #     value: $(params.deploy-repo-url)
-  #   - name: revision
-  #     value: "0.1" 
-  # - name: service-deploy-with-helm
-  #   runAfter: ["fetch-deployment-repo", "build-kaniko"]
-  #   taskRef:
-  #     name: helm-appkube-cmdb-install
-  #   params:
-  #   - name: workingDir
-  #     value: $(params.helm-workingDir-param)
-  #   - name: release_version
-  #     value: $(params.helm-release-version-param)
-  #   - name: release_name
-  #     value: $(params.helm-release-name-param)
-  #   - name: release_namespace
-  #     value: $(params.helm-release-namespace-param)
-  #   - name: overwrite_values
-  #     value: image.tag=$(tasks.fetch-repo.results.commit)
-  #   workspaces:
-  #   - name: source
-  #     workspace: shared-data1
-  #   - name: secrets
-  #     workspace: aws-secrets
+  - name: service-deploy-with-helm
+    when:
+    - input: $(params.uninstall-awsx-api-service)
+      operator: in
+      values: ["false"]
+    runAfter: ["build-awsx-api"]
+    taskRef:
+      name: helm-awsx-api-install
+    params:
+    - name: workingDir
+      value: $(params.helm-workingDir-param)
+    - name: release_version
+      value: $(params.helm-release-version-param)
+    - name: release_name
+      value: $(params.helm-release-name-param)
+    - name: release_namespace
+      value: $(params.helm-release-namespace-param)
+    - name: overwrite_values
+      value: image.tag=$(tasks.fetch-repo.results.commit)
+    workspaces:
+    - name: source
+      workspace: shared-data1
+    - name: secrets
+      workspace: aws-secrets
   finally:
     - name: cleanup-on-success
       when:
@@ -201,10 +237,12 @@ spec:
   - name: helm-release-version-param
     value: 0.1.0
   - name: helm-release-name-param
-    value: appkube-awsx-api-service
+    value: appkube-awsx-api
   - name: helm-release-namespace-param
     value: appkube-awsx-api-service
   - name: helm-workingDir-param
-    value: $(workspaces.source.path)/helm
+    value: $(workspaces.source.path)/helm/awsx-api
   - name: build-awsx-api-base-container
     value: "false"
+  - name: uninstall-awsx-api-service
+    value: "false"    
