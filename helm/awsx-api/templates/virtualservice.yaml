@@ -17,7 +17,7 @@ spec:
       uri: /
     route:
     - destination:
-        host: awsx-api.appkube-awsx-api-service.svc.cluster.local
+        host: appkube.awsx-api.appkube-awsx-api-service.svc.cluster.local
         port:
           number: {{ .Values.service.port }}
   {{ end }}
