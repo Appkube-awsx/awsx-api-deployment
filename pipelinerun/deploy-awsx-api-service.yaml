@@ -231,7 +231,7 @@ spec:
   - name: repo-url
     value: https://github.com/Appkube-awsx/awsx-api.git
   - name: repo-revision
-    value: 'docker'
+    value: ''
   - name: deploy-repo-url
     value: https://github.com/Appkube-awsx/awsx-api-deployment.git
   - name: helm-release-version-param

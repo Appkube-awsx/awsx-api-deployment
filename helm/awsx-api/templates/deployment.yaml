@@ -44,10 +44,12 @@ spec:
             httpGet:
               path: /
               port: http
+            initialDelaySeconds: {{ .Values.service.livenessInitialDelaySeconds }}
           readinessProbe:
             httpGet:
               path: /
-              port: http
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: {{ .Values.service.readinessInitialDelaySeconds }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- with .Values.volumeMounts }}
