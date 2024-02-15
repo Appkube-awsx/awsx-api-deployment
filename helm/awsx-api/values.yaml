@@ -44,6 +44,12 @@ service:
   port: 7000
   readinessInitialDelaySeconds: 180
   livenessInitialDelaySeconds: 200
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/job: appkube-awsx_api_test
+    prometheus.io/path: /management/prometheus
+    prometheus.io/port: '7000'
+    prometheus.io/label: environment=devtest,app=appkube_awsx_api_test
 
 ingress:
   enabled: false
