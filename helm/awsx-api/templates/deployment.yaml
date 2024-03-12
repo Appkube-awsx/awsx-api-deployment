@@ -42,12 +42,12 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
-              port: http
+              path: {{ .Values.service.livenessEndPoint }}
+              port: {{ .Values.service.port }}
             initialDelaySeconds: {{ .Values.service.livenessInitialDelaySeconds }}
           readinessProbe:
             httpGet:
-              path: /
+              path: {{ .Values.service.readinessEndPoint }}
               port: {{ .Values.service.port }}
             initialDelaySeconds: {{ .Values.service.readinessInitialDelaySeconds }}
           resources:

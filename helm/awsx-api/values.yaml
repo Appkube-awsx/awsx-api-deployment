@@ -42,8 +42,10 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 7000
-  readinessInitialDelaySeconds: 180
-  livenessInitialDelaySeconds: 200
+  readinessEndPoint: app-health/awsx-api/readyz
+  livenessEndPoint: app-health/awsx-api/livez
+  readinessInitialDelaySeconds: 10
+  livenessInitialDelaySeconds: 20
   annotations:
     prometheus.io/scrape: 'true'
     prometheus.io/job: appkube-awsx_api_test

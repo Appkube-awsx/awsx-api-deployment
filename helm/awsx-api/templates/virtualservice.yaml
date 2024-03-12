@@ -12,9 +12,9 @@ spec:
   http:
   - match:
     - uri:
-      prefix: /awsx-api
+        prefix: /{{ .Chart.Name }}
     rewrite:
-      uri: /
+      uri: /{{ .Chart.Name }}
     route:
     - destination:
         host: {{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local
